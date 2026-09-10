@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Process Logo</title>
+</head>
+<body style="background: #222; color: #fff; font-family: sans-serif; padding: 20px;">
+  <h2>Processing Logo to Transparent PNG</h2>
+  <canvas id="canvas"></canvas>
+  <div id="status" style="margin-top: 20px; font-size: 18px; font-weight: bold;">Loading...</div>
+
+  <script>
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Crop to the central icon region (axe + pestle)
+      // The image is 1024x1024. Icon is centered around y: 200 to 650, x: 300 to 720
+      const width = img.width;
+      const height = img.height;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.drawImage(img, 0, 0);
+
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+
+      // Convert dark background to transparent alpha
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i+1];
+        const b = data[i+2];
+
+        // Calculate lightness
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const lightness = (max + min) / 2;
+
+        // Dark background threshold
+        if (lightness < 42) {
+          data[i+3] = 0; // fully transparent
+        } else if (lightness < 70) {
+          // Feather alpha gradient for smooth anti-aliased edge
+          const alpha = Math.floor(((lightness - 42) / 28) * 255);
+          data[i+3] = alpha;
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+
+      // Save data URL to a global variable window.transparentPngDataUrl
+      window.transparentPngDataUrl = canvas.toDataURL('image/png');
+      document.getElementById('status').innerText = 'DONE! transparentPngDataUrl is ready.';
+    };
+    img.onerror = (e) => {
+      document.getElementById('status').innerText = 'ERROR loading image.';
+    };
+    img.src = 'logo_icon_source.jpg';
+  </script>
+</body>
+</html>
