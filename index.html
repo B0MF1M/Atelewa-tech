@@ -1130,25 +1130,45 @@
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   });
 
-  // Contact form submission feedback
+  // Contact form submission feedback & WhatsApp redirection
   const contactForm = document.getElementById('contact-form');
   if (contactForm) {
     contactForm.addEventListener('submit', function(e) {
       e.preventDefault();
+
+      const name = document.getElementById('field-name')?.value.trim() || '';
+      const phone = document.getElementById('field-phone')?.value.trim() || '';
+      const email = document.getElementById('field-email')?.value.trim() || '';
+      const service = document.getElementById('field-service')?.value || '';
+      const message = document.getElementById('field-message')?.value.trim() || '';
+
+      const text = `Olá! Gostaria de solicitar uma proposta para a Atelewa Tech:\n\n` +
+                   `👤 *Nome:* ${name}\n` +
+                   `📱 *WhatsApp:* ${phone}\n` +
+                   `✉️ *E-mail:* ${email}\n` +
+                   `🚀 *Tipo de Projeto:* ${service}` +
+                   (message ? `\n📝 *Descrição:* ${message}` : '');
+
+      const waUrl = `https://wa.me/5571996166794?text=${encodeURIComponent(text)}`;
+
       const btn = document.getElementById('submit-btn');
       if (btn) {
-        btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Mensagem Enviada com Sucesso!';
-        btn.style.background = '#222';
-        btn.style.color = '#fff';
+        btn.innerHTML = '<span class="material-symbols-outlined">chat</span> Redirecionando para o WhatsApp...';
+        btn.style.background = '#25D366';
+        btn.style.color = '#000000';
         btn.disabled = true;
-        setTimeout(() => {
+      }
+
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+        if (btn) {
           btn.innerHTML = 'Enviar Solicitação';
           btn.style.background = '';
           btn.style.color = '';
           btn.disabled = false;
-          this.reset();
-        }, 4000);
-      }
+        }
+        this.reset();
+      }, 800);
     });
   }
 
